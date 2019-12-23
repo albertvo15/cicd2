@@ -1,23 +1,18 @@
-node {
-    checkout scm
-    
-    stage('start') {
-        sh 'echo start2'
-    }
-    stage('save-env') {
-        sh 'env > properties'
-    }
+pipeline {
+    agent any
+    environment {
+        BUILD_ID = 'v1.0.0'
+    } 
+    stages {
+        stage('Build image') {
+            steps {
+                echo 'Starting to build docker image'
 
-    stage('build-image') {
-        sh 'docker build -t test:v1.0.0 .'
+                script {
+                    def customImage = docker.build("test:${env.BUILD_ID}")
+                    customImage.push()
+                }
+            }
+        }
     }
-    
-    stage('tag-image') {
-        sh 'docker tag test:v1.0.0 albertvo/test:latest'
-    }
-    stage('push-image') {
-        sh 'docker -- push albertvo/test:latest'
-    }
-    
-    archiveArtifacts 'properties'
 }
